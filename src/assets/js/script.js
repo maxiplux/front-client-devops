@@ -11,6 +11,9 @@
 
 //preloader
 $(document).ready(function () {
+
+  //$('.datables-custom').DataTable({ordering: false, searching: false, lengthChange: false, info: true, paging: true});
+
 	setInterval(function () {
 		$(".loader").hide();
 		$(".loader-overlay").hide();
