@@ -17,6 +17,7 @@ import { InMemoryCache } from '@apollo/client/core';
 
 import { GraphQLModule } from './graphql.module';
 import { HttpClientModule } from '@angular/common/http';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 
 
 
@@ -35,7 +36,8 @@ import { HttpClientModule } from '@angular/common/http';
   imports: [
     BrowserModule,
 
-    AppRoutingModule,DataTablesModule, GraphQLModule, HttpClientModule
+    AppRoutingModule,DataTablesModule, GraphQLModule, HttpClientModule,  FormsModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

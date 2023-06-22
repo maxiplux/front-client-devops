@@ -1,6 +1,14 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {tsCastToAny} from "@angular/compiler-cli/src/ngtsc/typecheck/src/ts_util";
 import {Apollo, gql} from "apollo-angular";
+import {GraphSearchService} from "../../core/services/graph-search.service";
+import {CityData, DataSchedule, FindScheduleByCustomArguments} from "../../core/models/real.model";
+import {City, ScheduleContent, TableSearchFlight} from "../../core/models/base.models";
+import {FormBuilder, Validators} from "@angular/forms";
+import {DataTableDirective} from "angular-datatables";
+import {Subject} from "rxjs";
+import {ajax} from "rxjs/internal/ajax/ajax";
+import Swal from "sweetalert2";
 
 interface DataTablesAjaxType {
   columns:[];
@@ -13,81 +21,95 @@ interface DataTablesAjaxType {
   selector: 'app-search-flight',
   templateUrl: './search-flight.component.html'
 })
-export class SearchFlightComponent implements OnInit {
-  dtOptions: DataTables.Settings = {};
-  //https://l-lin.github.io/angular-datatables/#/basic/with-ajax
-  //https://l-lin.github.io/angular-datatables/#/basic/new-server-side
-  private data: any = {};
+export class SearchFlightComponent implements  OnInit {
 
-  constructor(private apollo: Apollo) {}
 
+
+
+
+
+
+  pageNumber:number=0;
+
+
+
+
+  private columnDefinition=[       { title: 'ID',data: 'id'},
+    { title: 'Departure City',data: 'departureCityName'},
+    { title: 'Arrival City',data: 'arrivalCityName'},
+    { title: 'Departure Airport',data: 'departureAirportName'},
+
+    { title: 'Arrival Airport',data: 'arrivalAirportName'},
+    { title: 'Flight Number',data: 'flightNumber'},
+
+  ];
+  private tableConfig={columns: this.columnDefinition, bDestroy:true,pagingType:"simple",lengthChange:false,searching:false,info:false,pageLength:10,serverSide:true,processing:true,columnDefs:[{"defaultContent": "-","targets": "_all"}]};
+  cities: City[] = [];
+  SearchForm = this.fb.group({    cityDeparture: ['', [Validators.required]],    cityArrival: ['', [Validators.required]]  });
+
+  constructor(private apollo: Apollo, private graphSearchService:GraphSearchService, public fb: FormBuilder) {}
 
   ngOnInit(): void {
-    debugger;
-    const query = `query ExampleQuery {
-  company {
-    ceo
-  }
-  roadster {
-    apoapsis_au
-  }
-  capsulesUpcoming {
-    id
-    landings
-    missions {
-      name
-    }
-  }
-  rockets {
-    country
-    cost_per_launch
-    company
-    boosters
-    active
-    first_flight
-    first_stage {
-      burn_time_sec
-      engines
-    }
-  }
-}`;
-    this.apollo
-    .watchQuery({
-      query: gql`${query}`,
-    })
-    .valueChanges.subscribe((result: any) => {
-      console.table(result);
-      debugger;
-      this.data = result.data || {};
+    this.loadCities();
 
+  }
+
+
+  onSubmit() {
+    //
+
+    this.stopOrStartSpinner();
+
+    this.graphSearchService.searchByCityDepartureAndCityArrival(this.SearchForm.value.cityDeparture||'',this.SearchForm.value.cityArrival||'',this.pageNumber).subscribe(
+      (response:DataSchedule)=>
+    {
+      $('#myTable').DataTable({ ...this.tableConfig, ajax:(data:any, callback, settings)=>{
+        this.pageNumber= Math.ceil(data.start / data.length );
+        const contentToDraw:TableSearchFlight[]= response.findScheduleByCustomArguments.content.map((scheduleContent:ScheduleContent)=>this.transformFromScheduleContentToTableSearchFlight(scheduleContent));
+
+        const result= {recordsTotal: response.findScheduleByCustomArguments.totalElements,recordsFiltered: response.findScheduleByCustomArguments.numberOfElements,data: contentToDraw};
+        callback(result);
+        this.stopOrStartSpinner(false);
+
+
+        }});
 
     });
 
-    const columnDefinition=[{data:'departureCityName'},{data:'arrivalCityName'}];
-
-    this.dtOptions = {
-      destroy: true,
-      lengthChange : false,
-      processing: true,
-      serverSide: true,
-      columnDefs: [{defaultContent: "-", targets: "_all"}],
-      ordering: false, searching: false,  info: true, paging: true, pagingType: "full",
-      ajax: function (data:any, callback, settings) {
-
-        const sigma= {departureCityName: "Mumbai", arrivalCityName:"Delhi"};
-        const pageNumber = Math.ceil(data.start / data.length );
-        const url=`assets/data/data.json?page=${pageNumber}&size=10`;
 
 
-        const result=
-          { recordsTotal: 100,
-          recordsFiltered: 3,
-          data: [sigma,sigma,sigma],
-            }
-        callback( result);
-      },
-      columns: columnDefinition
+  }
+
+  private transformFromScheduleContentToTableSearchFlight(scheduleContent:ScheduleContent):TableSearchFlight{
+    return {
+      id: scheduleContent.id,
+      departureCityName: scheduleContent.airportDeparture.city.name,
+      arrivalCityName: scheduleContent.airportArrival.city.name,
+      departureAirportName: scheduleContent.airportDeparture.name,
+      arrivalAirportName: scheduleContent.airportArrival.name,
+      flightNumber: scheduleContent.plane.name
     };
   }
 
+
+
+
+  private stopOrStartSpinner(forceStop:boolean = true){
+    if(forceStop){
+      Swal.fire('Please wait');
+      Swal.showLoading()
+    }
+    else{
+      Swal.close();
+    }
+
+  }
+
+  private loadCities() {
+    this.stopOrStartSpinner();
+    this.graphSearchService.getCities().subscribe((response:CityData) => {
+      this.cities = response.findAllCities.content;
+      this.stopOrStartSpinner(false);
+    });
+  }
 }
