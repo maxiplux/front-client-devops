@@ -1,0 +1,37 @@
+name: DOCKER-PUBLISH-IMAGE
+on: [push] # When pushing to any branch then run this action
+# Env variable
+env:
+  DOCKER_USER: ${{secrets.DOCKER_USER}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+  REPO_NAME: ${{secrets.REPO_NAME}}
+jobs:
+  push-image-to-docker-hub:  # job name
+    runs-on: ubuntu-latest  # runner name : (ubuntu latest version)
+    steps:
+    
+    - uses: actions/checkout@v3 #actions/checkout@v3 first action : checkout source code
+      with:
+        use: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+        aws-region: us-east-1
+    - 
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2    
+    - 
+      name: docker login
+      run: | # log into docker hub account
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - 
+      name: docker set BuildX
+      run: | # Build X
+        docker buildx create --use --platform=linux/arm64,linux/amd64 --name multi-platform-builder
+    - 
+      name: Get current date # get the date of the build
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y%m%d%M%S')"
+    - 
+      name: Build the Docker image linux/arm64/AMD64 # push The image to the docker hub
+      run: docker buildx build -f Dockerfile --platform linux/amd64,linux/arm64 --push -t $DOCKER_USER/$REPO_NAME:${{ steps.date.outputs.date }} .
