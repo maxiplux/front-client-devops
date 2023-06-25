@@ -569,3 +569,53 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
+const createTicket=(payload)=>{
+
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+
+  var raw = JSON.stringify({
+    "query": `mutation{addCustomerToSchedule(customerInput:{email:"${payload.email}",scheduleId:"${payload.id}"}),{id,email}}`
+  });
+  console.log({...payload});
+  console.log(raw);
+
+  var requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  fetch("http://localhost:8084/graphql", requestOptions)
+    .then(response => response.json())
+    .then(
+
+      result => {
+
+        console.log(result);
+
+        const message = `Flight Confirmation: ${result.data.addCustomerToSchedule.id}<br/>
+
+Dear ${payload.email},
+<br/>
+Flight from ${payload.departureAirportName} to  ${payload.arrivalAirportName} with Flight Number :${payload.flightNumber} on ${payload.departureDateTime} is confirmed.
+<br/>
+Thank you,
+${payload.email}
+<br/>
+(Note: Please arrive early for check-in.)`;
+
+        Swal.fire(
+          'Congratulations!',
+          message,
+          'success'
+        );
+        console.log(result);
+      }
+
+    )
+    .catch(error => console.log('error', error));
+
+
+}

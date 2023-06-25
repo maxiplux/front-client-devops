@@ -32,7 +32,7 @@ export class GraphSearchService {
 
     //Swal.fire('Any fool can use a computer')
 
-    const querySearchByCityDepartureAndCityArrival:String=`{ findScheduleByCustomArguments(  queries: [{key:"airportArrival.city.name", value:"${arrival}"},{key:"airportDeparture.city.name", value:"${departure}"}]    page: ${page}    size: 100  ) {    numberOfElements,    totalElements,    totalPages,    content {plane{id,name},id,airportDeparture {name,city {name}      },airportArrival {name,city {name} } }  }}`;
+    const querySearchByCityDepartureAndCityArrival:String=`{ findScheduleByCustomArguments(  queries: [{key:"airportArrival.city.name", value:"${arrival}"},{key:"airportDeparture.city.name", value:"${departure}"}]    page: ${page}    size: 100  ) {    numberOfElements,    totalElements,    totalPages,    content {departureDateTime,arrivalDateTime,plane{id,name},id,airportDeparture {name,city {name}      },airportArrival {name,city {name} } }  }}`;
     return this.apollo
     .watchQuery<DataSchedule>({
       query: gql`${querySearchByCityDepartureAndCityArrival}`,

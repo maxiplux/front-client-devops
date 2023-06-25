@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild} from '@angular/core';
 import {tsCastToAny} from "@angular/compiler-cli/src/ngtsc/typecheck/src/ts_util";
 import {Apollo, gql} from "apollo-angular";
 import {GraphSearchService} from "../../core/services/graph-search.service";
@@ -41,6 +41,7 @@ export class SearchFlightComponent implements  OnInit {
 
     { title: 'Arrival Airport',data: 'arrivalAirportName'},
     { title: 'Flight Number',data: 'flightNumber'},
+    { title: 'Get My ticket',data: 'actionComponent'},
 
   ];
   private tableConfig={columns: this.columnDefinition, bDestroy:true,pagingType:"simple",lengthChange:false,searching:false,info:false,pageLength:10,serverSide:true,processing:true,columnDefs:[{"defaultContent": "-","targets": "_all"}]};
@@ -72,6 +73,7 @@ export class SearchFlightComponent implements  OnInit {
         this.stopOrStartSpinner(false);
 
 
+
         }});
 
     });
@@ -79,15 +81,24 @@ export class SearchFlightComponent implements  OnInit {
 
 
   }
+  createTicket($event:any):void
+  {
+    debugger;
+    Swal.fire(`Ticket created! `);
+  }
 
   private transformFromScheduleContentToTableSearchFlight(scheduleContent:ScheduleContent):TableSearchFlight{
-    return {
-      id: scheduleContent.id,
+
+
+    const baseObject={id: scheduleContent.id,
       departureCityName: scheduleContent.airportDeparture.city.name,
       arrivalCityName: scheduleContent.airportArrival.city.name,
       departureAirportName: scheduleContent.airportDeparture.name,
       arrivalAirportName: scheduleContent.airportArrival.name,
-      flightNumber: scheduleContent.plane.name
+      flightNumber: scheduleContent.plane.name};
+    return {
+      ...baseObject,
+      actionComponent: `<button class="btn btn-primary"   onclick='createTicket({arrivalDateTime:"${scheduleContent.arrivalDateTime}",departureDateTime:"${scheduleContent.departureDateTime}",flightNumber:"${scheduleContent.plane.name}",id:${scheduleContent.id},departureAirportName:"${scheduleContent.airportDeparture.name}",arrivalAirportName:"${scheduleContent.airportArrival.name.replace("'",'`')}", email:"IamARealCustomer@email.com"})' >Click!</button>`
     };
   }
 

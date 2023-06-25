@@ -33,6 +33,8 @@ export interface ScheduleContent {
   airportDeparture: Airport
   airportArrival: Airport
   plane: Plane
+  departureDateTime:string
+  arrivalDateTime:string
 }
 
 export interface TableSearchFlight {
@@ -42,5 +44,6 @@ export interface TableSearchFlight {
     departureAirportName: string
     arrivalAirportName: string
     flightNumber: string
+    actionComponent:any
 }
 
