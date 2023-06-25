@@ -593,7 +593,7 @@ const createTicket=(payload)=>{
 
       result => {
 
-        console.log(result);
+
 
         const message = `Flight Confirmation: ${result.data.addCustomerToSchedule.id}<br/>
 
@@ -611,11 +611,22 @@ ${payload.email}
           message,
           'success'
         );
-        console.log(result);
+
       }
 
     )
-    .catch(error => console.log('error', error));
+    .catch(error => {
+
+
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Something went wrong!',
+        footer: `${error.message} `
+      });
+
+    });
 
 
 }

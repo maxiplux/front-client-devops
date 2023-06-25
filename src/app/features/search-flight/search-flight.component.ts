@@ -98,7 +98,7 @@ export class SearchFlightComponent implements  OnInit {
       flightNumber: scheduleContent.plane.name};
     return {
       ...baseObject,
-      actionComponent: `<button class="btn btn-primary"   onclick='createTicket({arrivalDateTime:"${scheduleContent.arrivalDateTime}",departureDateTime:"${scheduleContent.departureDateTime}",flightNumber:"${scheduleContent.plane.name}",id:${scheduleContent.id},departureAirportName:"${scheduleContent.airportDeparture.name}",arrivalAirportName:"${scheduleContent.airportArrival.name.replace("'",'`')}", email:"IamARealCustomer@email.com"})' >Click!</button>`
+      actionComponent: `<button class="btn btn-primary"   onclick='createTicket({arrivalDateTime:"${scheduleContent.arrivalDateTime}",departureDateTime:"${scheduleContent.departureDateTime}",flightNumber:"${scheduleContent.plane.name}",id:${scheduleContent.id},departureAirportName:"${scheduleContent.airportDeparture.name}",arrivalAirportName:"${scheduleContent.airportArrival.name.replace("'",'`')}", email:"IamARealCustomer@email.com"})' >Get This fligh!</button>`
     };
   }
 
